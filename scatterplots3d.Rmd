@@ -17,6 +17,7 @@ For the plots below, *pts* represent the random points taken for each GEZ and *s
 library(tidyverse)
 library(ggplot2)
 library(scatterplot3d)
+library(FactoClass)
 # library(plotly)
 ```
 
@@ -30,9 +31,16 @@ eurSites$gezValue<-gsub("\\[|\\]","", eurSites$gezValue)
 #------------------------------------------------------------------------
 #sites
 #------------------------------------------------------------------------
-sites<-data.frame(as.numeric(eurSites$ID), as.character(eurSites$Site_Type), as.character(eurSites$gezValue), as.numeric(eurSites$meanSpeiValue), as.numeric(eurSites$minSpeiValue), as.numeric(eurSites$meanTempValue),
-# as.numeric(eurSitesBioclim$meanTempValue*0.1),
-as.numeric(eurSites$elevation),as.numeric(eurSites$forestCover30Value))
+sites<-data.frame(as.numeric(eurSites$ID), 
+                  as.factor(eurSites$Site_Type),
+                  as.character(eurSites$gezValue),
+                  as.numeric(eurSites$meanSpeiValue),
+                  as.numeric(eurSites$minSpeiValue),
+                  as.numeric(eurSites$meanTempValue),
+                  # as.numeric(eurSitesBioclim$meanTempValue*0.1),
+                  as.numeric(eurSites$elevation/100),
+                  as.numeric(eurSites$forestCover30Value))
+
 head(sites)
 names(sites)<- c('ID', 'type', 'gez', 'meanSpei', 'minSpei', 'meanTemp', 'elevation', 'forest30')
 
@@ -51,12 +59,12 @@ head(sites30)
 #------------------------------------------------------------------------
 eurPts$type <- "pts"
 pts<-data.frame(as.numeric(eurPts$CID + 6870),
-                as.character(eurPts$type),
+                as.factor(eurPts$type),
                 as.character(eurPts$gezValue), 
                 as.numeric(eurPts$meanSpeiValue), 
                 as.numeric(eurPts$minSpeiValue), 
                 as.numeric(eurPts$meanTempValue),  
-                as.numeric(eurPts$elevation),
+                as.numeric(eurPts$elevation/100),
                 as.numeric(eurPts$forestCover30Value))
 head(pts)
 names(pts)<- c('ID', 'type', 'gez', 'meanSpei', 'minSpei', 'meanTemp', 'elevation', 'forest30')
@@ -77,23 +85,81 @@ combine<-rbind(pts30, sites30)
 
 ```
 
+```{r plotLimits,echo=FALSE, message=FALSE, warning=FALSE}
+max_x <- max(combine$meanTemp) #mean Annual temp
+min_x <- min(combine$meanTemp)
+max_y <- max(combine$meanSpei) #mean SPEI value
+min_y <- min(combine$meanSpei)
+max_z <- max(combine$elevation) #mean Annual temp
+min_z <- min(combine$elevation)
+
+```
+
 ```{r borealConiferous, echo=FALSE, message=FALSE, warning=FALSE}
 
 #Look at 3d scatterplot
 gezType <-'Boreal coniferous forest'
-# ppPts<-dplyr::filter(combine, id == 'pts' & gez == gezType )
-# ppSites<-dplyr::filter(combine, id == 'sites' & gez == gezType )
 combinePts<-dplyr::filter(combine,gez == gezType )
-# combinePts$custom_colour <- ifelse(combinePts$id=="pts", '#BF382A', '#0C4B8E')
-# combinePts$opacity <- ifelse(combinePts$id=="pts", 0.25, 1)
-colourCombo <- c("#98FB98", "#FF5733", "#00FFFF", "#FFFF66")
-# Pale Green: #98FB98
-# Red: #FF5733
-# Aqua: #00FFFF
-# Yellow: #FFFF66
-plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
-  layout(title = gezType)
+colourCombo <- c("#98FB9825", "#00FFFF", "#FFFF66", "#FF5733")
+# Pale Green: #98FB98 pts
+# Red: #FF5733 research sites
+# Aqua: #00FFFF literature sites
+# Yellow: #FFFF66 inventory sites
+colours<-colourCombo[as.numeric(combinePts$type)]
+# scatterplot3d(x = combinePts$meanTemp, 
+#               y = combinePts$meanSpei, 
+#               z = combinePts$elevation,
+#               pch = 20,
+#               color = colours,
+#               angle = 70,
+#               main = gezType,
+#               xlab = "Mean annual Temperature(°C)",
+#               ylab = "Water availability index",
+#               zlab = "Elevation (100m)",
+#               xlim=c(min_x,max_x),
+#               ylim=c(min_y,max_y),
+#               zlim=c(0,max_z)
+#               )
+# legend()
 
+# source('~/hubiC/Documents/R/function/addgrids3d.r')
+s3d <- scatterplot3d(x = combinePts$meanTemp, 
+              y = combinePts$meanSpei, 
+              z = combinePts$elevation,
+              pch = "",
+              grid = F,
+              box = T,
+              # angle = 70,
+              # color = colours,
+              main = gezType,
+              xlab = "Mean annual Temperature(°C)",
+              ylab = "Water availability index",
+              zlab = "Elevation (100m)",
+              xlim=c(min_x,max_x),
+              ylim=c(min_y,max_y),
+              zlim=c(0,max_z)
+              )
+
+addgrids3d(x = combinePts$meanTemp, 
+           y = combinePts$meanSpei, 
+           z = combinePts$elevation,
+           grid = c("xy", "xz", "yz"),
+           xlim=c(min_x,max_x),
+           ylim=c(min_y,max_y),
+           zlim=c(0,max_z)
+           )
+s3d$points3d(x = combinePts$meanTemp, 
+              y = combinePts$meanSpei,
+              z = combinePts$elevation,
+              pch = 20,
+              col= colours)
+
+legend(s3d$xyz.convert(150, 1.5, -7),
+       legend = levels(combine$type),
+       col = colourCombo,
+       pch = 20,
+       cex = 0.75,
+       inset = 0.00, xpd = TRUE, horiz = F)
 ```
 
 ```{r borealMs, echo=FALSE, message=FALSE, warning=FALSE}

@@ -1,0 +1,168 @@
+---
+title: "European Revision"
+output: html_notebook
+---
+
+Checking out the scatterplot data of the GEZ and forest.  I took a random sampling of points, 2000 points per zone.  I then extracted the data for:
+
+1. [Mean annual temperature](https://developers.google.com/earth-engine/datasets/catalog/WORLDCLIM_V1_BIO)
+2. [Elevation](https://developers.google.com/earth-engine/datasets/catalog/USGS_GMTED2010)
+3. [SPEI](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_MONTHLY)
+
+I calculated the SPEI using the [SPEI package](https://cran.r-project.org/web/packages/SPEI/index.html) in R and calculated the mean SPEI for the monthly time period between 2000 - 2020.
+
+For the plots below, *pts* represent the random points taken for each GEZ and *sites* represent the primary forest sites in the paper.  The plots are interactive and you can zoom in and out and move axes of the plot, just click on the plot.
+
+```{r libraries, echo = F, results='hide', message=FALSE, error = F, include = F, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scatterplot3d)
+# library(plotly)
+```
+
+```{r formatData, echo = F, results='hide', message=FALSE, error = F, include = F, warning=FALSE}
+
+eurPts<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanPointsExtractEra2.csv')
+eurSites<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanSitesExtractAll.csv')
+# eurPtsBioclim<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanPointsExtract.csv')
+# eurSitesBioclim<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanSitesExtract.csv')
+
+eurPts$gezValue<-gsub("\\[|\\]","", eurPts$gezValue)
+eurSites$gezValue<-gsub("\\[|\\]","", eurSites$gezValue)
+
+#------------------------------------------------------------------------
+#sites
+#------------------------------------------------------------------------
+sites<-data.frame(as.character(eurSites$ID), as.character(eurSites$Site_Type), as.character(eurSites$gezValue), as.numeric(eurSites$meanSpeiValue), as.numeric(eurSites$minSpeiValue), as.numeric(eurSites$meanTempValue),
+# as.numeric(eurSitesBioclim$meanTempValue*0.1),
+as.numeric(eurSites$elevation),as.numeric(eurSites$forestCover30Value))
+head(sites)
+names(sites)<- c('ID', 'type', 'gez', 'meanSpei', 'minSpei', 'meanTemp', 'elevation', 'forest30')
+
+#add rounded data
+sites$meanSpeiRd <- round(sites$meanSpei, 2)
+sites$minSpeiRd <- round(sites$minSpei, 2)
+
+#omit all n/a rows
+sites<-na.omit(sites)
+
+sites30 <- dplyr::filter(sites, forest30 %in% c(1))
+head(sites30)
+
+#------------------------------------------------------------------------
+#points
+#------------------------------------------------------------------------
+pts<-data.frame(as.character(eurPts$CID), as.character(eurPts$gezValue), as.numeric(eurPts$meanSpeiValue), as.numeric(eurPts$minSpeiValue), as.numeric(eurPts$meanTempValue), as.numeric(eurPtsBioclim$meanTempValue*0.1), as.numeric(eurPts$elevation),as.numeric(eurPts$forestCover30Value))
+head(pts)
+names(pts)<- c('CID', 'gez', 'meanSpei', 'minSpei', 'meanTemp','meanTempBioclim', 'elevation', 'forest30')
+
+#add rounded data
+pts$meanSpeiRd <- round(pts$meanSpei, 2)
+pts$minSpeiRd <- round(pts$minSpei, 2)
+
+#omit all n/a rows
+pts<-na.omit(pts)
+
+pts30 <- dplyr::filter(pts, forest30 %in% c(1))
+pts30$id <- "pts"
+head(pts30)
+
+#-------------------------
+combine<-rbind(pts30, sites30)
+
+```
+
+```{r borealConiferous, echo=FALSE, message=FALSE, warning=FALSE}
+
+#Look at 3d scatterplot
+gezType <-'Boreal coniferous forest'
+# ppPts<-dplyr::filter(combine, id == 'pts' & gez == gezType )
+# ppSites<-dplyr::filter(combine, id == 'sites' & gez == gezType )
+combinePts<-dplyr::filter(combine,gez == gezType )
+# combinePts$custom_colour <- ifelse(combinePts$id=="pts", '#BF382A', '#0C4B8E')
+# combinePts$opacity <- ifelse(combinePts$id=="pts", 0.25, 1)
+colourCombo <- c("#98FB98", "#FF5733", "#00FFFF", "#FFFF66")
+# Pale Green: #98FB98
+# Red: #FF5733
+# Aqua: #00FFFF
+# Yellow: #FFFF66
+plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
+  layout(title = gezType)
+
+```
+
+```{r borealMs, echo=FALSE, message=FALSE, warning=FALSE}
+
+#Look at 3d scatterplot
+gezType <-'Boreal mountain system'
+# ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
+combinePts<-dplyr::filter(combine, gez == gezType )
+
+
+plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
+  layout(title = gezType)
+
+```
+
+```{r TemperateContinental Forest, echo=FALSE, message=FALSE, warning=FALSE}
+
+#Look at 3d scatterplot
+gezType <-'Temperate continental forest'
+# ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
+combinePts<-dplyr::filter(combine, gez == gezType )
+
+plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
+  layout(title = gezType)
+
+```
+
+```{r TemperateMountainSystem, echo=FALSE, message=FALSE, warning=FALSE}
+
+#Look at 3d scatterplot
+gezType <-'Temperate mountain system'
+# ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
+combinePts<-dplyr::filter(combine, gez == gezType )
+
+
+plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
+  layout(title = gezType)
+```
+
+```{r TemperateOceanicForest, echo=FALSE, message=FALSE, warning=FALSE}
+
+#Look at 3d scatterplot
+gezType <-'Temperate oceanic forest'
+# ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
+combinePts<-dplyr::filter(combine, gez == gezType )
+
+
+plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
+  layout(title = gezType)
+
+```
+
+```{r SubtropicalMountainSystem, echo=FALSE, message=FALSE, warning=FALSE}
+
+#Look at 3d scatterplot
+gezType <-'Subtropical mountain system'
+# ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
+combinePts<-dplyr::filter(combine, gez == gezType )
+
+plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
+  layout(title = gezType)
+
+```
+
+```{r SubtropicalDryForest, echo=FALSE, message=FALSE, warning=FALSE}
+
+#Look at 3d scatterplot
+gezType <-'Subtropical dry forest'
+# ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
+combinePts<-dplyr::filter(combine, gez == gezType )
+
+
+plot_ly(combinePts, x = ~meanTemp,y = ~meanSpeiRd, z = ~elevation , color = ~id, colors = c('#FF99A9', '#0C4B8E'), opacity = 0.85, marker = list(size = 2))%>%
+  layout(title = gezType)
+
+```
+

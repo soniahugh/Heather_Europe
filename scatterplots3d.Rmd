@@ -24,16 +24,13 @@ library(scatterplot3d)
 
 eurPts<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanPointsExtractEra2.csv')
 eurSites<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanSitesExtractAll.csv')
-# eurPtsBioclim<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanPointsExtract.csv')
-# eurSitesBioclim<-read.csv('E:\\Big_Tree\\data\\Europe\\revision\\europeanSitesExtract.csv')
-
 eurPts$gezValue<-gsub("\\[|\\]","", eurPts$gezValue)
 eurSites$gezValue<-gsub("\\[|\\]","", eurSites$gezValue)
 
 #------------------------------------------------------------------------
 #sites
 #------------------------------------------------------------------------
-sites<-data.frame(as.character(eurSites$ID), as.character(eurSites$Site_Type), as.character(eurSites$gezValue), as.numeric(eurSites$meanSpeiValue), as.numeric(eurSites$minSpeiValue), as.numeric(eurSites$meanTempValue),
+sites<-data.frame(as.numeric(eurSites$ID), as.character(eurSites$Site_Type), as.character(eurSites$gezValue), as.numeric(eurSites$meanSpeiValue), as.numeric(eurSites$minSpeiValue), as.numeric(eurSites$meanTempValue),
 # as.numeric(eurSitesBioclim$meanTempValue*0.1),
 as.numeric(eurSites$elevation),as.numeric(eurSites$forestCover30Value))
 head(sites)
@@ -52,9 +49,17 @@ head(sites30)
 #------------------------------------------------------------------------
 #points
 #------------------------------------------------------------------------
-pts<-data.frame(as.character(eurPts$CID), as.character(eurPts$gezValue), as.numeric(eurPts$meanSpeiValue), as.numeric(eurPts$minSpeiValue), as.numeric(eurPts$meanTempValue), as.numeric(eurPtsBioclim$meanTempValue*0.1), as.numeric(eurPts$elevation),as.numeric(eurPts$forestCover30Value))
+eurPts$type <- "pts"
+pts<-data.frame(as.numeric(eurPts$CID + 6870),
+                as.character(eurPts$type),
+                as.character(eurPts$gezValue), 
+                as.numeric(eurPts$meanSpeiValue), 
+                as.numeric(eurPts$minSpeiValue), 
+                as.numeric(eurPts$meanTempValue),  
+                as.numeric(eurPts$elevation),
+                as.numeric(eurPts$forestCover30Value))
 head(pts)
-names(pts)<- c('CID', 'gez', 'meanSpei', 'minSpei', 'meanTemp','meanTempBioclim', 'elevation', 'forest30')
+names(pts)<- c('ID', 'type', 'gez', 'meanSpei', 'minSpei', 'meanTemp', 'elevation', 'forest30')
 
 #add rounded data
 pts$meanSpeiRd <- round(pts$meanSpei, 2)
@@ -64,7 +69,7 @@ pts$minSpeiRd <- round(pts$minSpei, 2)
 pts<-na.omit(pts)
 
 pts30 <- dplyr::filter(pts, forest30 %in% c(1))
-pts30$id <- "pts"
+
 head(pts30)
 
 #-------------------------

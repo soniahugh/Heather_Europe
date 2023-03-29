@@ -104,7 +104,8 @@ gezType <-'Boreal coniferous forest'
 combinePts<-dplyr::filter(combine,gez == gezType )
 research<-dplyr::filter(combinePts, type %in% c('research'))
 # colourCombo <- c("#98FB9825", "#00FFFF75", "#FFFF6675", "#FF573375")
-colourCombo <- c("#B1E5AD30", "#00FFFF80", "#F6D65890", "#C9242C90")
+colourCombo <- c("#B1E5AD30", "#00CCCC", "#F6D65890", "#C9242C90")
+# colourCombo<- c("#76C56E25","#008B8B75", "#DAA52090", "#C9242C90")
 # Pale Green: #98FB98 pts
 # Red: #FF5733 research sites
 # Aqua: #00FFFF literature sites
@@ -138,6 +139,7 @@ s3d <- scatterplot3d(x = combinePts$meanTemp,
               # color = colours,
               main = gezType,
               xlab = "Mean annual Temperature(°C)",
+              # ylab = "",
               ylab = "Water availability index",
               zlab = "Elevation (100m)",
               xlim=c(min_x,max_x),
@@ -160,15 +162,19 @@ s3d$points3d(x = combinePts$meanTemp,
               pch = 20,
               col= colours)
 
+# dims <- par("usr")
+# x <- dims[1]+ 0.9*diff(dims[1:2])
+# y <- dims[3]+ 0.08*diff(dims[3:4])
+# mtext(x,y,"Water availability index",srt=30)
 legend(s3d$xyz.convert(20, -0.5, -4),
-       legend = c("forest cover random points", 
+       legend = c("forest cover random points",
                   "research sites",
-                  "literature sites", 
-                  "inventory sites" 
+                  "literature sites",
+                  "inventory sites"
                   ),
-       col = c("#B1E5AD60", "#C9242C90", "#00FFFF80", "#F6D65890"),
+       col = c("#B1E5AD75", "#C9242C90", "#00CCCC", "#F6D65890"),
        pch = 20,
-       cex = 0.7,
+       cex = 0.8,
        inset = 0.00, xpd = TRUE, horiz = F)
 ```
 
@@ -231,7 +237,7 @@ gezType <-'Temperate continental forest'
 # ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
 combinePts<-dplyr::filter(combine, gez == gezType )
 # research<-dplyr::filter(combinePts, type %in% c('research'))
-colourCombo <- c("#B1E5AD30", "#00FFFF80", "#F6D65880", "#C9242C85")
+colourCombo <- c("#B1E5AD30", "#00CCCC", "#F6D65880", "#C9242C85")
 # Pale Green: #B1E5AD30 pts
 # Red: #C9242C research sites
 # Aqua: "#00FFFF80"literature sites
@@ -275,7 +281,7 @@ legend(s3d$xyz.convert(20, -0.5, -4),
                   "literature sites", 
                   "inventory sites" 
                   ),
-       col = c("#B1E5AD60", "#C9242C90", "#00FFFF80", "#F6D65890"),
+       col = c("#B1E5AD60", "#C9242C90", "#00CCCC", "#F6D65890"),
        pch = 20,
        cex = 0.7,
        inset = 0.00, xpd = TRUE, horiz = F)
@@ -287,7 +293,7 @@ legend(s3d$xyz.convert(20, -0.5, -4),
 gezType <-'Temperate mountain system'
 # ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
 combinePts<-dplyr::filter(combine, gez == gezType )
-colourCombo <- c("#B1E5AD30", "#00FFFF80", "#F6D65880", "#C9242C85")
+colourCombo <- c("#B1E5AD30", "#00CCCC", "#F6D65880", "#C9242C85")
 # Pale Green: #B1E5AD30 pts
 # Red: #C9242C research sites
 # Aqua: "#00FFFF80"literature sites
@@ -331,7 +337,7 @@ legend(s3d$xyz.convert(20, -0.5, -4),
                   "literature sites", 
                   "inventory sites" 
                   ),
-       col = c("#B1E5AD60", "#C9242C90", "#00FFFF80", "#F6D65890"),
+       col = c("#B1E5AD60", "#C9242C90", "#00CCCC", "#F6D65890"),
        pch = 20,
        cex = 0.7,
        inset = 0.00, xpd = TRUE, horiz = F)
@@ -343,7 +349,7 @@ legend(s3d$xyz.convert(20, -0.5, -4),
 gezType <-'Temperate oceanic forest'
 # ppPts<-dplyr::filter(pts30, id == 'pts' & gez == gezType )
 combinePts<-dplyr::filter(combine, gez == gezType )
-colourCombo <- c("#B1E5AD30", "#00FFFF80", "#F6D65880", "#C9242C85")
+colourCombo <- c("#B1E5AD30", "#00CCCC", "#F6D65880", "#C9242C85")
 # Pale Green: #B1E5AD30 pts
 # Red: #C9242C research sites
 # Aqua: "#00FFFF80"literature sites
@@ -387,7 +393,7 @@ legend(s3d$xyz.convert(20, -0.5, -4),
                   "literature sites", 
                   "inventory sites" 
                   ),
-       col = c("#B1E5AD60", "#C9242C90", "#00FFFF80", "#F6D65890"),
+       col = c("#B1E5AD60", "#C9242C90", "#00CCCC", "#F6D65890"),
        pch = 20,
        cex = 0.7,
        inset = 0.00, xpd = TRUE, horiz = F)
